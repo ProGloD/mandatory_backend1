@@ -11,7 +11,7 @@ function App() {
   return !isAuthed ? (
     <Login updateAuthed={updateAuthed} name={name} updateName={updateName} />
   ) : (
-    <Home updateAuthed={updateAuthed} />
+    <Home updateAuthed={updateAuthed} name={name} />
   );
 }
 

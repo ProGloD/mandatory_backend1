@@ -41,6 +41,7 @@ function Home(props) {
   return (
     <Router>
       <header>
+        <span>{props.name}</span>
         <button onClick={() => props.updateAuthed(false)}>Log Out</button>
       </header>
       <aside>
@@ -50,18 +51,21 @@ function Home(props) {
             onChange={e => updateNewRoom(e.target.value)}
             value={newRoom}
           />
-          <button onClick={createRoom}>+</button>
+          <button onClick={createRoom}>&#43;</button>
         </div>
         {rooms.map(room => (
           <div className="room" key={room.id}>
             <Link to={`/room/${room.id}`}>{room.name}</Link>
-            <button onClick={() => removeRoom(room.id)}>-</button>
+            <button onClick={() => removeRoom(room.id)}>&times;</button>
           </div>
         ))}
       </aside>
 
       <Route exact path="/" component={Main} />
-      <Route path="/room/:id" component={Room} />
+      <Route
+        path="/room/:id"
+        render={routeProps => <Room {...routeProps} name={props.name} />}
+      />
     </Router>
   );
 }

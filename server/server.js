@@ -3,6 +3,7 @@ const express = require("express");
 const app = express();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
+
 const fs = require("fs");
 
 const PORT = 8080;
@@ -71,10 +72,38 @@ app.post("/api/rooms", (req, res) => {
   });
 });
 
+app.get("/api/room/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+
+  fs.readFile("./databas/rooms.json", (err, data) => {
+    if (err) {
+      res.status(500).end();
+      return;
+    }
+
+    let file = JSON.parse(data);
+    let room = file.rooms.find(el => el.id === id);
+
+    if (!room) {
+      res.status(500).end();
+      return;
+    }
+
+    fs.readFile(`./databas/rooms/${room.name}.json`, (err, data) => {
+      if (err) {
+        res.status(500).end();
+        return;
+      }
+
+      res.status(200).send(data);
+    });
+  });
+});
+
 app.post("/api/room/:id", (req, res) => {
   const body = req.body;
 
-  if (!(body || body.user || body.message)) {
+  if (!body || !body.user || !body.message) {
     res.status(400).end();
     return;
   }
@@ -124,7 +153,8 @@ app.post("/api/room/:id", (req, res) => {
             return;
           }
 
-          res.status(200).send({ message: newMessage });
+          io.emit("new_message", { message: newMessage });
+          res.end();
         }
       );
     });
