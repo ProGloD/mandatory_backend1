@@ -7,7 +7,7 @@ function Login(props) {
   }
 
   return (
-    <>
+    <div className="login-page">
       <h1>Welcome to chat!</h1>
       <form onSubmit={onSubmit}>
         <input
@@ -18,7 +18,7 @@ function Login(props) {
         />
         <input type="submit" value="Sign In" />
       </form>
-    </>
+    </div>
   );
 }
 

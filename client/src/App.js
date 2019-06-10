@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import Login from "./components/Login";
 import Home from "./components/Home";
-import "./App.css";
+import "./css/App.css";
 
 function App() {
   const [name, updateName] = useState("");

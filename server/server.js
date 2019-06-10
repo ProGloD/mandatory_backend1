@@ -31,7 +31,7 @@ app
       }
     }
 
-    let id = rooms[rooms.length - 1].id + 1;
+    let id = uuidv1();
     let room = {
       id,
       name: req.body.name
@@ -62,7 +62,7 @@ app
 app
   .route("/api/room/:id")
   .get((req, res) => {
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
 
     let room = file.rooms.find(el => el.id === id);
 
@@ -88,7 +88,7 @@ app
       return;
     }
 
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
     const user = body.user;
     const message = body.message;
 
@@ -133,7 +133,7 @@ app
     });
   })
   .delete((req, res) => {
-    let id = parseInt(req.params.id);
+    let id = req.params.id;
 
     let rooms = file.rooms;
 
@@ -146,6 +146,11 @@ app
 
     const room = rooms[idx];
     const name = room.name;
+
+    if (name === "Main") {
+      res.status(400).end();
+      return;
+    }
 
     fs.unlink(`./databas/rooms/${name}.json`, err => {
       if (err) {

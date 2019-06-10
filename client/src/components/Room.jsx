@@ -7,16 +7,18 @@ const socket = io("http://localhost:8080");
 function Room(props) {
   const [message, updateMessage] = useState("");
   const [messages, updateMessages] = useState([]);
-  let [users, updateUsers] = useState([]);
+  const [users, updateUsers] = useState([]);
 
   const { id } = props.match.params;
   const user = props.name;
 
   useEffect(() => {
     socket.on("new_message", data => {
-      if (!users.includes(data.message.user)) {
-        updateUsers(u => u.concat(data.message.user));
-      }
+      updateUsers(u => {
+        if (!u.includes(data.message.user)) return u.concat(data.message.user);
+        return u;
+      });
+
       updateMessages(m => m.concat(data.message));
     });
 
@@ -54,7 +56,7 @@ function Room(props) {
               }`}
               key={message.id}
             >
-              <p>{message.user}</p>
+              <p className="message__username">{message.user}</p>
               <p>{message.message}</p>
             </div>
           ))}
