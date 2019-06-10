@@ -15,14 +15,11 @@ function Room(props) {
   useEffect(() => {
     socket.on("new_message", data => {
       if (!users.includes(data.message.user)) {
-        //let newUsers = [...users, data.message.user];
-        //newUsers.push(data.message.user);
-        updateUsers([...users, data.message.user]);
+        updateUsers(u => u.concat(data.message.user));
       }
-      let newMessages = [...messages];
-      newMessages.push(data.message);
-      updateMessages(newMessages);
+      updateMessages(m => m.concat(data.message));
     });
+
     axios
       .get(`/api/room/${id}`)
       .then(response => {
@@ -33,7 +30,7 @@ function Room(props) {
       .catch(err => console.log(err));
 
     return () => {
-      socket.off("new_message", () => console.log("Socket is off!"));
+      socket.off("new_message");
     };
   }, [props.location.pathname]);
 

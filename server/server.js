@@ -3,6 +3,7 @@ const express = require("express");
 const app = express();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
+let file = require("./databas/rooms.json");
 
 const fs = require("fs");
 
@@ -10,31 +11,18 @@ const PORT = 8080;
 
 app.use(express.json());
 
-app.get("/api/rooms", (_, res) => {
-  fs.readFile("./databas/rooms.json", (err, data) => {
-    if (err) {
-      res.status(500).end();
+app
+  .route("/api/rooms")
+  .get((_, res) => {
+    res.status(200).send(file);
+  })
+  .post((req, res) => {
+    if (!req.body || !req.body.name) {
+      res.status(400).end();
       return;
     }
 
-    res.status(200).send(JSON.parse(data));
-  });
-});
-
-app.post("/api/rooms", (req, res) => {
-  if (!req.body || !req.body.name) {
-    res.status(400).end();
-    return;
-  }
-
-  fs.readFile("./databas/rooms.json", (err, data) => {
-    if (err) {
-      res.status(500).end();
-      return;
-    }
-
-    let file = JSON.parse(data);
-    let rooms = [...file.rooms];
+    let rooms = file.rooms;
 
     for (let room of rooms) {
       if (room.name === req.body.name) {
@@ -67,25 +55,19 @@ app.post("/api/rooms", (req, res) => {
         }
       );
 
-      res.status(200).send(room);
+      res.status(201).send(room);
     });
   });
-});
 
-app.get("/api/room/:id", (req, res) => {
-  const id = parseInt(req.params.id);
+app
+  .route("/api/room/:id")
+  .get((req, res) => {
+    const id = parseInt(req.params.id);
 
-  fs.readFile("./databas/rooms.json", (err, data) => {
-    if (err) {
-      res.status(500).end();
-      return;
-    }
-
-    let file = JSON.parse(data);
     let room = file.rooms.find(el => el.id === id);
 
     if (!room) {
-      res.status(500).end();
+      res.status(404).end();
       return;
     }
 
@@ -97,32 +79,23 @@ app.get("/api/room/:id", (req, res) => {
 
       res.status(200).send(data);
     });
-  });
-});
+  })
+  .post((req, res) => {
+    const body = req.body;
 
-app.post("/api/room/:id", (req, res) => {
-  const body = req.body;
-
-  if (!body || !body.user || !body.message) {
-    res.status(400).end();
-    return;
-  }
-
-  const id = parseInt(req.params.id);
-  const user = body.user;
-  const message = body.message;
-
-  fs.readFile("./databas/rooms.json", (err, data) => {
-    if (err) {
-      res.status(500).end();
+    if (!body || !body.user || !body.message) {
+      res.status(400).end();
       return;
     }
 
-    let file = JSON.parse(data);
+    const id = parseInt(req.params.id);
+    const user = body.user;
+    const message = body.message;
+
     let room = file.rooms.find(el => el.id === id);
 
     if (!room) {
-      res.status(400).status("This room does not exist!");
+      res.status(404).status("This room does not exist!");
       return;
     }
 
@@ -158,24 +131,16 @@ app.post("/api/room/:id", (req, res) => {
         }
       );
     });
-  });
-});
+  })
+  .delete((req, res) => {
+    let id = parseInt(req.params.id);
 
-app.delete("/api/room/:id", (req, res) => {
-  let id = parseInt(req.params.id);
-
-  fs.readFile("./databas/rooms.json", (err, data) => {
-    if (err) {
-      res.status(500).end();
-      return;
-    }
-    let file = JSON.parse(data);
-    let rooms = [...file.rooms];
+    let rooms = file.rooms;
 
     let idx = rooms.findIndex(room => room.id === id);
 
     if (idx === -1) {
-      res.status(500).end();
+      res.status(404).end();
       return;
     }
 
@@ -195,10 +160,9 @@ app.delete("/api/room/:id", (req, res) => {
           res.status(500).end();
         }
 
-        res.status(200).end();
+        res.status(204).end();
       });
     });
   });
-});
 
 server.listen(PORT, () => console.log(`Server is listening on port ${PORT}`));
